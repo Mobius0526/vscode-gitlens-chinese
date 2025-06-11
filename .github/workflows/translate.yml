@@ -43,7 +43,7 @@ jobs:
     - name: Build GitLens
       run: |
         cd gitlens
-        npm ci --ignore-scripts  # 安全安装依赖
+        npm i --ignore-scripts  # 安全安装依赖
         npm run package
         echo "Build artifacts:"
         ls -lh *.vsix  # 显示生成的 VSIX 包
