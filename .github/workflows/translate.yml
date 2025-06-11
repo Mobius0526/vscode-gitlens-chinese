@@ -37,14 +37,12 @@ jobs:
     # 5. 设置 Node.js 环境
     - name: Setup Node.js
       uses: actions/setup-node@v4
-      with:
-        node-version: '20'
-        cache: 'pnpm'  # 缓存 npm 依赖加速后续构建
 
     # 6. 构建 GitLens
     - name: Build GitLens
       run: |
         cd gitlens
+        npm i pnpm
         npm i --ignore-scripts  # 安全安装依赖
         npm run package
         echo "Build artifacts:"
