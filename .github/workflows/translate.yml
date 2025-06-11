@@ -1,0 +1,58 @@
+name: Translate Pipeline
+
+on:
+  workflow_dispatch: # 仅允许手动触发
+
+jobs:
+  translate-and-build:
+    runs-on: ubuntu-latest
+
+    steps:
+    # 1. 拉取当前仓库（包含你的翻译脚本）
+    - name: Checkout current repository
+      uses: actions/checkout@v4
+
+    # 2. 拉取目标仓库（GitLens）
+    - name: Checkout GitLens repository
+      uses: actions/checkout@v4
+      with:
+        repository: gitkraken/vscode-gitlens
+        path: gitlens
+        fetch-depth: 1  # 只克隆最新提交
+
+    # 3. 复制 package.json 文件
+    - name: Copy package files
+      run: |
+        cp gitlens/package.json ./package.json
+        echo "Original package.json:"
+        cat package.json | head -n 10 # 显示部分内容验证
+
+    # 4. 运行翻译脚本
+    - name: Run translation
+      run: |
+        python translator.py
+        echo "Translated package.json:"
+        cat gitlens/package.json | head -n 10 # 显示翻译结果
+
+    # 5. 设置 Node.js 环境
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'npm'  # 缓存 npm 依赖加速后续构建
+
+    # 6. 构建 GitLens
+    - name: Build GitLens
+      run: |
+        cd gitlens
+        npm ci --ignore-scripts  # 安全安装依赖
+        npm run package
+        echo "Build artifacts:"
+        ls -lh *.vsix  # 显示生成的 VSIX 包
+
+    # 7. 上传构建产物（可选）
+    - name: Upload build artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: gitlens-package
+        path: gitlens/*.vsix
